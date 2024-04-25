@@ -1,5 +1,7 @@
 namespace: "my-namespace"
 
+replicas: "3"
+
 image:
   repository: my-aws-account-id.dkr.ecr.region.amazonaws.com/my-app
   tag: latest
