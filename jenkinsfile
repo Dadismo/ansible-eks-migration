@@ -27,7 +27,7 @@ pipeline {
                     // Copy YAML files from cloned repository to Helm home directory
                     sh "cp -r ${env.YAML_DIRECTORY_PATH}/* ${env.HELM_HOME}/"
                     // Install or upgrade Helm chart
-                    sh "helm upgrade --install my-release ${env.HELM_HOME}"
+                    // sh "helm upgrade --install my-release ${env.HELM_HOME}"
                 }
             }
         }
