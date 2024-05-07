@@ -1,0 +1,42 @@
+pipeline {
+    agent {
+        label 'helm'
+    }
+
+    environment {
+        KUBECONFIG = '/path/to/kube/config'
+        HELM_HOME = '/path/to/helm/home' // ex: "${env.WORKSPACE}/helm-chart-name)/templates"
+        GITHUB_REPO_URL = 'https://github.com/your/repository.git'
+        BRANCH_NAME = 'specific_branch'
+        YAML_DIRECTORY_PATH = "${env.WORKSPACE}/path/to/cloned/repository/yaml_directory/" // ex: "${env.WORKSPACE}/eks-ansible-migration/helm-chart-name)/templates
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                script {
+                    // Clone the GitHub repository branch
+                    git branch: env.BRANCH_NAME, url: env.GITHUB_REPO_URL
+                }
+            }
+        }
+
+        stage('Copy YAML files and Deploy to EKS') {
+            steps {
+                script {
+                    // Copy YAML files from cloned repository to Helm home directory
+                    sh "cp -r ${env.YAML_DIRECTORY_PATH}/* ${env.HELM_HOME}/"
+                    // Install or upgrade Helm chart
+                    sh "helm upgrade --install my-release ${env.HELM_HOME}"
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Clean up workspace
+            cleanWs()
+        }
+    }
+}
