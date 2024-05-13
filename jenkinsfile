@@ -5,33 +5,35 @@ pipeline {
 
     environment {
         KUBECONFIG = '/path/to/kube/config'
-        HELM_HOME = '/path/to/helm/home' // ex: "${env.WORKSPACE}/helm-chart-name)/templates"
-        GITHUB_REPO_URL = 'https://github.com/your/repository.git'
-        BRANCH_NAME = 'specific_branch'
-        YAML_DIRECTORY_PATH = "${env.WORKSPACE}/path/to/cloned/repository/yaml_directory/" // ex: "${env.WORKSPACE}/eks-ansible-migration/helm-chart-name)/templates
+        HELM_HOME = '/path/to/helm/home' // ex: "${env.WORKSPACE}/helm-chart-name)/templates" path to the helm home in the helm agent
+        // GITHUB_REPO_URL = 'https://github.com/your/repository.git'
+        // BRANCH_NAME = 'specific_branch' // should be the main, where all the yml file and the jenkins file are
+        // YAML_DIRECTORY_PATH = "${env.WORKSPACE} ex: "${env.WORKSPACE}/eks-ansible-migration/helm-chart-name)/templates
     }
 
     stages {
-        stage('Clone Repository') {
-            steps {
-                script {
-                    // Clone the GitHub repository branch
-                    git branch: env.BRANCH_NAME, url: env.GITHUB_REPO_URL
-                }
-            }
-        }
-
         stage('Copy YAML files and Deploy to EKS') {
             steps {
                 script {
+                    // run some testing on the syntax of the code w/ yamllint
+                    sh 'yamllint .' 
+
                     // Copy YAML files from cloned repository to Helm home directory
-                    sh "cp -r ${env.YAML_DIRECTORY_PATH}/* ${env.HELM_HOME}/"
+                    sh "find ${env.WORKSPACE}/* -type f ! -name 'jenkinsfile' ! -name 'read.me' -exec cp -t ${env.HELM_HOME}/ {} +"
+
                     // Install or upgrade Helm chart
                     // sh "helm upgrade --install my-release ${env.HELM_HOME}"
                 }
             }
         }
     }
+
+    post {
+        always {
+            // Archive the YAML linting results
+            archiveArtifacts artifacts: 'yamllint-results.txt'
+        }
+    }  
 
     post {
         always {
