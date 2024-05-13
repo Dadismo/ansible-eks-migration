@@ -1,14 +1,11 @@
 pipeline {
     agent {
-        label 'helm'
+        label 'helm' // make sure yaml lint is installed on this agent as well
     }
 
     environment {
         KUBECONFIG = '/path/to/kube/config'
         HELM_HOME = '/path/to/helm/home' // ex: "${env.WORKSPACE}/helm-chart-name)/templates" path to the helm home in the helm agent
-        // GITHUB_REPO_URL = 'https://github.com/your/repository.git'
-        // BRANCH_NAME = 'specific_branch' // should be the main, where all the yml file and the jenkins file are
-        // YAML_DIRECTORY_PATH = "${env.WORKSPACE} ex: "${env.WORKSPACE}/eks-ansible-migration/helm-chart-name)/templates
     }
 
     stages {
