@@ -9,7 +9,7 @@ pipeline {
     }
 
     stages {
-        stage('Copy YAML files and Deploy to EKS') {
+        stage('Copy YAML files to directory & package') {
             steps {
                 script {
                     // run some testing on the syntax of the code w/ yamllint
@@ -18,13 +18,17 @@ pipeline {
                     // Copy YAML files from cloned repository to Helm home directory
                     sh "find ${env.WORKSPACE}/* -type f ! -name 'jenkinsfile' ! -name 'read.me' -exec cp -t ${env.HELM_HOME}/ {} +"
 
-                    // Install or upgrade Helm chart
-                    // sh "helm upgrade --install my-release ${env.HELM_HOME}"
+                    // change directory
+                    dir ("${HELM_HOME}")
+                    sh "cd .."
+
+                    // package the the helm chart 
+                    sh "helm package .{env.HELM_HOME}"
                 }
             }
         }
-    }
 
+    }
     post {
         always {
             // Archive the YAML linting results
